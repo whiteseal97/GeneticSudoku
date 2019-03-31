@@ -15,9 +15,9 @@ class Genotype:
         
         
 class Board:
-    def __init__(self, grids):
+    def __init__(self, grids, mask):
         self.grids = grids
-        
+        self.mask = mask
                 
         
     def get_row(self, index):
@@ -35,8 +35,14 @@ class Board:
         return col
     
     def random_swap(self):
-        fst, sec = random.sample(range(0,9), 2)
-        grid = random.sample(self.grids, 1)[0]
+        gridIndex = random.sample(range(0,9), 1)[0]
+        
+        grid = self.grids[gridIndex]
+        possibleSwaps = [i for i, x in enumerate(self.mask[gridIndex]) if x]
+        #print(mask)
+        
+        fst, sec = random.sample(possibleSwaps, 2)
+        print('Swapping ', fst, ' and ', sec, ' in grid ', gridIndex)
         temp = grid[fst]
         grid[fst] = grid[sec]
         grid[sec] = temp
@@ -56,8 +62,28 @@ class Board:
                 print('*'*41)
             else:
                 print('-'*41)
-    
-    
+     
+def maskBoard(grids):
+    mask = []
+    for grid in grids:
+        newGrid = []
+        for num in grid:
+            newGrid.append(True if num == 0 else False)
+        mask.append(newGrid)
+        
+    return mask
+
+def randomiseBoard(grids):
+    randBoard = []
+    for grid in grids:
+        newGrid = []
+        missing = list(set(range(1,10)) - set(grid))
+        random.shuffle(missing)
+        for i in range(0,9):
+            newGrid.append([missing.pop() if grid[i] == 0 else grid[i]])
+            
+        randBoard.append(newGrid)
+    return randBoard
 
 a = [[7,3,5,8,4,2,9,1,6],
      [6,1,4,9,7,3,2,8,5],
@@ -69,11 +95,28 @@ a = [[7,3,5,8,4,2,9,1,6],
      [4,9,2,7,3,8,5,6,1],
      [6,8,3,2,1,5,7,4,9]]
 
-a[0][3:6]
+sudoku = [
+            [0,0,6,3,0,0,0,5,0],
+            [0,2,7,4,0,6,0,0,0],
+            [0,0,0,0,0,9,7,0,4],
+            [0,0,0,0,9,0,8,0,7],
+            [0,0,2,1,6,0,3,0,0],
+            [9,1,8,0,0,0,2,0,0],
+            [0,3,9,7,0,0,0,2,0],
+            [6,0,5,0,1,0,0,4,0],
+            [0,0,0,0,3,0,0,9,7]
+        ]
 
+mask = maskBoard(sudoku)
+a[0][3:6]
+randomiseBoard(sudoku)
 a[1//3]
 
-b = Board(a)
+b = Board(sudoku, mask)
+b.printBoard()
+print()
+b.random_swap()
+b.printBoard()
 for i in range(0,9):
     print(b.get_col(i))
 b.get_row(0)
@@ -85,6 +128,8 @@ test = [1,2,3,4,5,6,7]
 g = Genotype(b)
 
 g.getFitness()
+
+print(list(set(range(1,10)) - set([0, 1, 5, 10])))
 
 board = []
 for i in range(0,9):
